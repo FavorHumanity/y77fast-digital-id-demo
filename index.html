@@ -1,0 +1,84 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<!-- doc-id: Y77F-DEMO-20261018-d9a1048b -->
+<meta name="author" content="Favor Figota Taueva">
+<meta name="copyright" content="© 2026 Y77FAST SOFTWARE FOUNDATION Corp. All rights reserved.">
+<meta name="doc-id" content="Y77F-DEMO-20261018-d9a1048b"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Y77FAST Digital ID Wallet — Demo Prototype</title>
+<style>
+:root{--gold:#F5C542;--gold2:#E8B923;--card:#0B2A4F;--g:linear-gradient(90deg,#8E44AD,#FF5FA2);--ok:#5EE6A0;--bad:#FF8A80;--warn:#FFD166}
+*{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(160deg,#0A4D8C,#0E7FB8);background-attachment:fixed;color:#F2F7FC;min-height:100vh}
+header{background:linear-gradient(120deg,rgba(6,28,56,.85),rgba(10,77,140,.6));padding:20px 28px;border-bottom:3px solid transparent;border-image:var(--g) 1}
+header h1{margin:0;font-size:26px;color:var(--gold);text-shadow:0 2px 6px rgba(0,0,0,.35)}header .tag{color:#E6F1FB;font-size:14px;margin-top:4px;letter-spacing:.3px}
+.banner{background:#FFF4D6;padding:8px 28px;font-size:13px;color:#4a3800;border-bottom:3px solid transparent;border-image:var(--g) 1}
+main{max-width:1150px;margin:22px auto;padding:0 16px;display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.card{border:2px solid transparent;border-radius:12px;padding:16px 18px;background:linear-gradient(var(--card),var(--card)) padding-box,var(--g) border-box;box-shadow:0 8px 24px rgba(4,20,45,.35)}
+.card h2{margin:0 0 10px;font-size:18px;color:var(--gold)}.full{grid-column:1/-1}
+label{display:block;font-size:12px;color:#CFE3F5;margin-top:8px}input,select{width:100%;padding:7px;border:1px solid #6C8DB5;border-radius:6px;font-size:14px;background:#07203D;color:#fff}
+button{background:linear-gradient(90deg,#E8B923,#F5C542);color:#1A1A1A;font-weight:600;border:0;border-radius:6px;padding:8px 14px;margin-top:10px;cursor:pointer;font-size:14px}button:hover{filter:brightness(1.08)}
+button.sec{background:var(--g);color:#fff}
+table{width:100%;border-collapse:collapse;font-size:12.5px;border:1px solid transparent;border-image:var(--g) 1}th,td{border-bottom:1px solid rgba(255,95,162,.35);padding:5px;text-align:left;vertical-align:top}th{background:#123A68;color:var(--gold)}
+.mono{font-family:Consolas,monospace;font-size:11px;word-break:break-all;color:#BFE0FF}
+.pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;color:#fff;background:var(--g)}
+.ok{color:var(--ok);font-weight:600}.bad{color:var(--bad);font-weight:600}.warn{color:var(--warn);font-weight:600}
+.wallets{display:grid;grid-template-columns:1fr 1fr;gap:10px}.w{border:1px solid transparent;border-image:var(--g) 1;padding:10px;font-size:13px;background:#0F3460}
+#msg{margin-top:10px;font-size:13px}footer{text-align:center;font-size:12px;color:#EAF4FD;padding:20px}
+.note{font-size:12px;color:#CFE3F5}
+.vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style></head><body>
+<header><h1>Y77FAST Digital ID Wallet <span class="pill">DEMO</span><span class="vh" aria-hidden="true">Y77F-DEMO-20261018-d9a1048b</span></h1><div class="tag">Secure · Speed · Trust — Technology that safely serves people.</div></header>
+<div class="banner"><b>Prototype only.</b> All names, IDs and balances are fake demo data. No real money, no real identity checks, no network calls. Tier limits follow the Y77FAST Tiered KYC Plan (draft, 13 Oct 2026); limits marked † are proposed internal limits, not set by law. Not legal advice.</div>
+<main>
+<section class="card"><h2>1 · Create digital ID (tiered KYC)</h2>
+<label>Full name (demo)</label><input id="nm" value="Demo User C">
+<label>Address (demo)</label><input id="ad" value="Demo Village, Upolu">
+<label>Verified phone (demo)</label><input id="ph" value="+685 000 0003">
+<label>KYC tier</label><select id="tr"></select>
+<div id="tierInfo" style="font-size:12px;margin-top:8px;color:#CFE3F5"></div>
+<button onclick="createID()">Create demo ID + wallet</button></section>
+<section class="card"><h2>KYC tiers (from plan)</h2><table><tr><th>Tier</th><th>Verification (summary)</th><th>Per transfer</th><th>Monthly</th></tr><tbody id="tierTbl"></tbody></table>
+<p class="note">Phase 2 — National Digital ID (NDID Act 2024): relying-party access only after Registrar General approval and with customer consent. Not active in this demo.</p></section>
+<section class="card full"><h2>2 · P2P tala transfer (tier limits enforced)</h2><div class="wallets" id="wallets"></div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end">
+<div><label>From</label><select id="fr"></select></div><div><label>To</label><select id="to"></select></div>
+<div><label>Amount (SAT, demo)</label><input id="amt" type="number" value="150"></div><button onclick="transfer()">Send</button></div>
+<div id="msg"></div></section>
+<section class="card full"><h2>3 · Tamper-evident ledger (SHA-256 hash chain)</h2>
+<button onclick="verify()">Verify chain</button> <button class="sec" onclick="tamper()">Simulate tampering (edit block 1)</button> <button class="sec" onclick="reset()">Reset demo</button>
+<div id="vres" style="margin-top:8px;font-size:13px"></div>
+<table style="margin-top:8px"><tr><th>#</th><th>Time</th><th>Event</th><th>Prev hash</th><th>Hash</th></tr><tbody id="led"></tbody></table></section>
+<section class="card full"><h2>About Y77FAST</h2><p>Y77FAST Software Foundation builds technology that safely serves people: identity, payments and records designed around Secure · Speed · Trust. Like a canoe built plank by plank, every record here is lashed to the one before it.</p><p class="note">This page is an early prototype for review. Every name, ID and balance is fake demo data; no real money moves and no real identity is checked.</p><span class="vh" aria-hidden="true">Y77F-DEMO-20261018-d9a1048b</span></section>
+</main><footer>© 2026 Y77FAST SOFTWARE FOUNDATION Corp. All rights reserved. · Demo prototype · Runs fully offline in your browser<span class="vh" aria-hidden="true">Y77F-DEMO-20261018-d9a1048b</span></footer><!-- Y77F-DEMO-20261018-d9a1048b -->
+<script>
+const TIERS={0:{name:"Tier 0 Basic",ver:"Name, address, nature of activity (MLPR reg 15(3)) + verified phone†",tx:300,mo:1000,bal:1000},
+1:{name:"Tier 1 Standard",ver:"One MLPR reg 5(1)(a) document + one independent source†",tx:2000,mo:5000,bal:null},
+2:{name:"Tier 2 Full / Enhanced",ver:"Full MLPA s.16(2) document, 2+ independent sources, liveness† + EDD",tx:19999,mo:50000,bal:null}};
+const fmt=n=>"SAT "+Number(n).toLocaleString();
+let wallets,ledger;
+async function sha(s){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+const payload=b=>JSON.stringify({i:b.i,t:b.t,e:b.e,prev:b.prev});
+async function addBlock(e){const prev=ledger.length?ledger[ledger.length-1].hash:"0".repeat(64);const b={i:ledger.length,t:new Date().toLocaleString(),e,prev};b.hash=await sha(payload(b));ledger.push(b)}
+function id(){return "DEMO-"+Math.random().toString(36).slice(2,8).toUpperCase()}
+async function reset(){wallets=[{id:"DEMO-A1",name:"Demo User A",tier:0,bal:800,month:0},{id:"DEMO-B2",name:"Demo User B",tier:1,bal:3000,month:0}];ledger=[];
+await addBlock("GENESIS — demo ledger opened");for(const w of wallets)await addBlock(`ID created ${w.id} (${w.name}) ${TIERS[w.tier].name}; opening demo balance ${fmt(w.bal)}`);render();document.getElementById("vres").textContent="";msg("")}
+function msg(h){document.getElementById("msg").innerHTML=h}
+function render(){const t=document.getElementById("tierTbl");t.innerHTML=Object.entries(TIERS).map(([k,v])=>`<tr><td>${v.name}</td><td>${v.ver}</td><td>≤ ${fmt(v.tx)}†${k==0?"<br><small>(law: &lt; 500, reg 4(d))</small>":""}</td><td>≤ ${fmt(v.mo)}†${v.bal?"<br><small>balance ≤ "+fmt(v.bal)+"†</small>":""}</td></tr>`).join("");
+document.getElementById("wallets").innerHTML=wallets.map(w=>`<div class="w"><b>${w.name}</b> <span class="pill">${TIERS[w.tier].name}</span><br>ID: ${w.id}<br>Balance: <b>${fmt(w.bal)}</b><br>Sent this month: ${fmt(w.month)} / ${fmt(TIERS[w.tier].mo)}</div>`).join("");
+const opts=wallets.map((w,i)=>`<option value="${i}">${w.name} (${w.id})</option>`).join("");const fr=document.getElementById("fr"),to=document.getElementById("to");const a=fr.value,b=to.value;fr.innerHTML=opts;to.innerHTML=opts;fr.value=a||0;to.value=b||1;
+document.getElementById("led").innerHTML=ledger.map(b=>`<tr id="r${b.i}"><td>${b.i}</td><td>${b.t}</td><td>${b.e}</td><td class="mono">${b.prev.slice(0,16)}…</td><td class="mono">${b.hash.slice(0,16)}…</td></tr>`).join("")}
+async function createID(){const n=nm.value.trim(),a=ad.value.trim(),p=ph.value.trim(),t=+tr.value;if(!n||!a||!p){alert("Name, address and phone are required (MLPR reg 15(3) minimum + phone†).");return}
+const w={id:id(),name:n,tier:t,bal:t==0?500:2500,month:0};wallets.push(w);await addBlock(`ID created ${w.id} (${n}) ${TIERS[t].name}; opening demo balance ${fmt(w.bal)}`);render();msg(`<span class="ok">✔ Demo ID ${w.id} created at ${TIERS[t].name}.</span>`)}
+async function transfer(){const f=wallets[+fr.value],t=wallets[+to.value],a=+amt.value,L=TIERS[f.tier];let why=null;
+if(f===t)why="Sender and receiver must differ.";else if(!(a>0))why="Enter a positive amount.";
+else if(a>L.tx)why=`Over ${L.name} per-transfer limit (${fmt(L.tx)}†). Upgrade KYC tier.`;
+else if(f.month+a>L.mo)why=`Over ${L.name} monthly limit (${fmt(L.mo)}†).`;
+else if(a>f.bal)why="Insufficient demo balance.";
+else if(TIERS[t.tier].bal&&t.bal+a>TIERS[t.tier].bal)why=`Receiver would exceed ${TIERS[t.tier].name} balance cap (${fmt(TIERS[t.tier].bal)}†).`;
+if(why){await addBlock(`REJECTED ${fmt(a)} ${f.id} → ${t.id}: ${why}`);render();msg(`<span class="bad">✖ Blocked:</span> ${why}`);return}
+f.bal-=a;f.month+=a;t.bal+=a;await addBlock(`TRANSFER ${fmt(a)} ${f.id} → ${t.id} | originator: ${f.name}, acct ${f.id}, address on file (reg 16(2))`);render();msg(`<span class="ok">✔ Sent ${fmt(a)}</span> from ${f.name} to ${t.name}.`)}
+async function verify(){let ok=true,bad=-1;for(let i=0;i<ledger.length;i++){const b=ledger[i],exp=i?ledger[i-1].hash:"0".repeat(64);if(b.prev!==exp||await sha(payload(b))!==b.hash){ok=false;bad=i;break}}
+document.querySelectorAll("#led tr").forEach(r=>r.style.background="");const v=document.getElementById("vres");
+if(ok)v.innerHTML=`<span class="ok">✔ Chain valid — ${ledger.length} blocks, every hash matches.</span>`;else{v.innerHTML=`<span class="bad">✖ Chain broken at block ${bad}: contents no longer match the stored hash.</span>`;const r=document.getElementById("r"+bad);if(r)r.style.background="rgba(255,95,162,.35)"}}
+function tamper(){if(ledger.length>1){ledger[1].e=ledger[1].e.replace(/SAT [\d,]+/,"SAT 99,999");render();document.getElementById("vres").innerHTML='<span class="warn">Block 1 text edited without re-hashing. Click “Verify chain”.</span>'}}
+document.getElementById("tr").innerHTML=Object.entries(TIERS).map(([k,v])=>`<option value="${k}">${v.name}</option>`).join("");
+tr.onchange=()=>{const v=TIERS[tr.value];tierInfo.textContent=`${v.ver}. Limits: ≤ ${fmt(v.tx)}† per transfer, ≤ ${fmt(v.mo)}† monthly.`};tr.onchange();reset();
+</script></body></html>
